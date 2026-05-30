@@ -1,1 +1,0 @@
-package com.company.securityanalyzer.detector; public class SqlInjectionDetector implements Detector{}

@@ -35,6 +35,27 @@ public class WebServerLogParser implements LogParser {
             );
 
     @Override
+    public boolean supports(Path file) {
+
+        try (var lines = Files.lines(file)) {
+
+            return lines
+                    .limit(20)
+                    .anyMatch(this::looksLikeWebLog);
+
+        } catch (IOException ex) {
+
+            return false;
+        }
+    }
+
+    private boolean looksLikeWebLog(String line) {
+
+        return WEB_LOG_PATTERN.matcher(line)
+                .matches();
+    }
+
+    @Override
     public ParseResult parse(Path logFile) {
 
         List<Event> events = new ArrayList<>();

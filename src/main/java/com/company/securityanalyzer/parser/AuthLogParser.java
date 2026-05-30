@@ -44,6 +44,27 @@ public class AuthLogParser implements LogParser {
             );
 
     @Override
+    public boolean supports(Path file) {
+
+        try (var lines = Files.lines(file)) {
+
+            return lines
+                    .limit(20)
+                    .anyMatch(this::looksLikeAuthLog);
+
+        } catch (IOException ex) {
+
+            return false;
+        }
+    }
+
+    private boolean looksLikeAuthLog(String line) {
+
+        return line.contains("sshd[")
+                || line.contains("sudo:");
+    }
+
+    @Override
     public ParseResult parse(Path logFile) {
 
         List<Event> events = new ArrayList<>();

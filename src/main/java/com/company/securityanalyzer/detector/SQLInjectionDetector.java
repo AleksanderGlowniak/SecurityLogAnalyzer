@@ -6,10 +6,10 @@ import com.company.securityanalyzer.model.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TraversalDetector
+public class SQLInjectionDetector
         extends AbstractDetector {
 
-    public TraversalDetector(
+    public SQLInjectionDetector(
             RuleConfig config
     ) {
         super(config);
@@ -23,26 +23,31 @@ public class TraversalDetector
         List<Incident> incidents =
                 new ArrayList<>();
 
-        for (Event e : events) {
+        for (Event event : events) {
 
             String path =
-                    e.attributes()
+                    event.attributes()
                             .getOrDefault(
                                     "path",
                                     ""
                             );
 
-            for (String pattern :
-                    config.getTraversalPatterns()) {
+            String upper =
+                    path.toUpperCase();
 
-                if (path.contains(pattern)) {
+            for (String pattern :
+                    config.getSqlInjectionPatterns()) {
+
+                if (upper.contains(
+                        pattern.toUpperCase()
+                )) {
 
                     incidents.add(
                             new Incident(
                                     Severity.HIGH,
-                                    "Directory Traversal",
-                                    "Traversal pattern detected",
-                                    e.sourceIp(),
+                                    "SQL Injection Attempt",
+                                    "Detected SQLi payload",
+                                    event.sourceIp(),
                                     List.of(path)
                             )
                     );
