@@ -1,9 +1,13 @@
 package com.company.securityanalyzer;
 
+import com.company.securityanalyzer.config.ConfigLoader;
+import com.company.securityanalyzer.config.RuleConfig;
 import com.company.securityanalyzer.model.ParseResult;
 import com.company.securityanalyzer.parser.AuthLogParser;
 import com.company.securityanalyzer.parser.WebServerLogParser;
+import com.company.securityanalyzer.report.*;
 import com.company.securityanalyzer.service.AutoDetectParsingService;
+import com.company.securityanalyzer.service.DetectionService;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -11,21 +15,16 @@ import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(
+            String[] args
+    ) {
 
-        if (args.length == 0) {
-
-            System.err.println(
-                    "Usage: analyzer <log files>"
-            );
-
-            System.exit(1);
-        }
-
-        List<Path> files =
-                Arrays.stream(args)
-                        .map(Path::of)
-                        .toList();
+        RuleConfig config =
+                ConfigLoader.load(
+                        Path.of(
+                                "src/main/resources/rules.yaml"
+                        )
+                );
 
         AutoDetectParsingService parser =
                 new AutoDetectParsingService(
@@ -36,16 +35,31 @@ public class Main {
                 );
 
         ParseResult result =
-                parser.parse(files);
+                parser.parse(
+                        Arrays.stream(args)
+                                .map(Path::of)
+                                .toList()
+                );
 
-        System.out.printf(
-                "Parsed %d events%n",
-                result.events().size()
-        );
+        DetectionService detectionService =
+                new DetectionService(config);
 
-        System.out.printf(
-                "Found %d parse errors%n",
-                result.errors().size()
-        );
+        var incidents =
+                detectionService.detect(
+                        result.events()
+                );
+
+        ReportSummary report =
+                new ReportBuilder()
+                        .build(
+                                result.events().size(),
+                                incidents,
+                                result.errors()
+                        );
+
+        new StandardConsoleReporter()
+                .print(report);
     }
 }
+
+

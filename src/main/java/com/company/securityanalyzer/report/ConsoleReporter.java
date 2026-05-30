@@ -1,1 +1,7 @@
-package com.company.securityanalyzer.report; public class ConsoleReporter{}
+package com.company.securityanalyzer.report;
+
+public interface ConsoleReporter {
+
+    void print(ReportSummary report);
+
+}
