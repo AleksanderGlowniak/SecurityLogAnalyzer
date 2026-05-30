@@ -1,0 +1,1 @@
+package com.company.securityanalyzer.detector; public class TraversalDetector implements Detector{}

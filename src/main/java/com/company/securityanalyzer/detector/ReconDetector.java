@@ -1,0 +1,1 @@
+package com.company.securityanalyzer.detector; public class ReconDetector implements Detector{}

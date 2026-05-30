@@ -1,0 +1,1 @@
+package com.company.securityanalyzer.util; public record ParseError(String line){}

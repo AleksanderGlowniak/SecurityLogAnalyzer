@@ -1,0 +1,1 @@
+package com.company.securityanalyzer.report; public class ConsoleReporter{}

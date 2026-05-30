@@ -1,0 +1,32 @@
+failedLoginThreshold: 3
+
+adminProbeThreshold: 3
+
+requestBurstThreshold: 5
+
+sqlInjectionPatterns:
+  - UNION SELECT
+  - DROP TABLE
+  - "' OR"
+  - "'--"
+
+traversalPatterns:
+  - ../
+  - ..\
+  - /etc/passwd
+
+sensitivePaths:
+  - /admin
+  - /admin/
+  - /admin/config
+  - /phpmyadmin
+  - /wp-admin
+  - /administrator
+  - /.env
+  - /config.php
+
+sensitiveCommands:
+  - /etc/shadow
+  - passwd
+  - usermod
+  - visudo
