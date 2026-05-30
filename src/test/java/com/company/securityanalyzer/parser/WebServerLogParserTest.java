@@ -1,7 +1,6 @@
-package com.company.securityanalyzer.parserTests;
+package com.company.securityanalyzer.parser;
 
 import com.company.securityanalyzer.model.ParseResult;
-import com.company.securityanalyzer.parser.WebServerLogParser;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -40,6 +39,23 @@ public class WebServerLogParserTest {
         assertEquals(
                 1,
                 result.errors().size()
+        );
+    }
+
+    @Test
+    void shouldParseWebLogEntry() {
+
+        var result =
+                new WebServerLogParser()
+                        .parse(
+                                Path.of(
+                                        "src/test/resources/webserver.log"
+                                )
+                        );
+
+        assertEquals(
+                1,
+                result.events().size()
         );
     }
 }

@@ -1,7 +1,5 @@
-package com.company.securityanalyzer.configTests;
+package com.company.securityanalyzer.config;
 
-import com.company.securityanalyzer.config.ConfigLoader;
-import com.company.securityanalyzer.config.RuleConfig;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

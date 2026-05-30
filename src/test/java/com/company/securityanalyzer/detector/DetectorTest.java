@@ -1,5 +1,5 @@
 
-package com.company.securityanalyzer.detectoTests;
+package com.company.securityanalyzer.detector;
 
 import org.junit.jupiter.api.Test;
 
