@@ -33,13 +33,20 @@ public class DetectionService {
         List<Incident> incidents =
                 new ArrayList<>();
 
-        for (Detector detector :
-                detectors) {
+        for (Detector detector : detectors) {
 
             incidents.addAll(
                     detector.detect(events)
             );
         }
+
+        CorrelationEngine correlation =
+                new CorrelationEngine();
+
+        incidents =
+                correlation.correlate(
+                        incidents
+                );
 
         incidents.sort(
                 (a, b) ->

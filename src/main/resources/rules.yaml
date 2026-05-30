@@ -30,3 +30,5 @@ sensitiveCommands:
   - passwd
   - usermod
   - visudo
+
+correlationWindowMinutes: 5
