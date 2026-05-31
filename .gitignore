@@ -1,1 +1,67 @@
-/target/
+# ==========================================
+# Java Compilation & Build Artifacts
+# ==========================================
+*.class
+*.log
+*.ctxt
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Output directories
+target/
+bin/
+out/
+build/
+.gradle/
+
+# ==========================================
+# IntelliJ IDEA
+# ==========================================
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# If you prefer to share project configuration (e.g., code style) with your team, 
+# comment out the ".idea/" line above and uncomment the specific files you want to keep.
+# However, keeping ".idea/" ignored is standard practice for solo/Community Edition developers.
+# .idea/compiler.xml
+# .idea/encodings.xml
+# .idea/modules.xml
+# .idea/vcs.xml
+# .idea/workspace.xml
+# .idea/dictionaries
+# .idea/libraries
+
+# Always ignore user-specific IntelliJ files
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries
+.idea/shelf/
+
+# JetBrains temporary/build files
+cmake-build-*/
+*.desktop
+
+# ==========================================
+# Build Tools & Wrappers
+# ==========================================
+# Exclude build wrappers from being ignored (good practice so team members can build instantly)
+!.mvn/wrapper/maven-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Crash dumps (Java Virtual Machine crash logs)
+hs_err_pid*
+replay_pid*
+
+# ==========================================
+# OS Specific files
+# ==========================================
+.DS_Store
+Thumbs.db
