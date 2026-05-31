@@ -163,7 +163,7 @@ Apache Maven 3.9+
 Clone repository:
 
 ```bash
-git clone https://github.com/<your-account>/security-log-analyzer.git
+git clone https://github.com/AleksanderGlowniak/SecurityLogAnalyzer.git
 ```
 
 Navigate to project:
@@ -204,7 +204,7 @@ target/
 ### Analyze Individual Files
 
 ```bash
-java -jar target/security-log-analyzer-1.0.0.jar webserver.log auth.log
+java -jar target/security-log-analyzer-1.0.0.jar src/test/resources/webserver.log src/test/resources/auth.log
 ```
 
 ### Analyze Multiple Log Files
@@ -224,9 +224,8 @@ java -jar target/security-log-analyzer-1.0.0.jar *.log
 ### Example
 
 ```bash
-java -jar target/security-log-analyzer-1.0.0.jar \
-    samples/webserver.log \
-    samples/auth.log
+java -jar target/security-log-analyzer-1.0.0.jar src/test/resources/webserver.log src/test/resources/auth.log
+
 ```
 
 ---
