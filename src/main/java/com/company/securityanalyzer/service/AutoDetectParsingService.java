@@ -45,19 +45,34 @@ public class AutoDetectParsingService {
         );
     }
 
-    private LogParser detectParser(
-            Path file
-    ) {
+    private LogParser detectParser(Path file) {
+
+        String fileName =
+                file.getFileName()
+                        .toString()
+                        .toLowerCase();
+
+        if (fileName.contains("web")) {
+            return parsers.stream()
+                    .filter(WebServerLogParser.class::isInstance)
+                    .findFirst()
+                    .orElseThrow();
+        }
+
+        if (fileName.contains("auth")) {
+            return parsers.stream()
+                    .filter(AuthLogParser.class::isInstance)
+                    .findFirst()
+                    .orElseThrow();
+        }
 
         return parsers.stream()
                 .filter(p -> p.supports(file))
                 .findFirst()
                 .orElseThrow(
-                        () ->
-                                new ParserDetectionException(
-                                        "No parser found for "
-                                                + file
-                                )
+                        () -> new ParserDetectionException(
+                                "No parser found for " + file
+                        )
                 );
     }
 }

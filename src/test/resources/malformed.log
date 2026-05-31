@@ -1,3 +1,1 @@
-  "2022-01-01 00:00:00,123 Error Message\n" +
-  "Invalid timestamp: 2023-01-02 00:00:00\n" +
-  "Incomplete log line")
+[MALFORMED ENTRY - system restart

@@ -18,9 +18,18 @@ class AuthLogParserTest {
                                         "src/test/resources/auth.log"
                                 )
                         );
+        System.out.println(
+                "events=" + result.events().size()
+        );
+
+        System.out.println(
+                "errors=" + result.errors().size()
+        );
+
+        result.events().forEach(System.out::println);
 
         assertEquals(
-                1,
+                11,
                 result.events().size()
         );
     }

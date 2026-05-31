@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Locale;
 
 public class AuthLogParser implements LogParser {
 
@@ -49,6 +50,9 @@ public class AuthLogParser implements LogParser {
         try (var lines = Files.lines(file)) {
 
             return lines
+                    .map(String::trim)
+                    .filter(line -> !line.isEmpty())
+                    .filter(line -> !line.equals("```"))
                     .limit(20)
                     .anyMatch(this::looksLikeAuthLog);
 
@@ -79,16 +83,24 @@ public class AuthLogParser implements LogParser {
                 long lineNumber =
                         lineCounter.incrementAndGet();
 
+                String trimmed = line.trim();
+
+                if (trimmed.isEmpty() || trimmed.equals("```")) {
+                    return;
+                }
+
                 try {
 
                     Event event =
-                            parseLine(line);
+                            parseLine(trimmed);
 
                     if (event != null) {
                         events.add(event);
                     }
 
                 } catch (Exception ex) {
+
+                    ex.printStackTrace();
 
                     errors.add(
                             new ParseError(
@@ -167,42 +179,26 @@ public class AuthLogParser implements LogParser {
         return null;
     }
 
-    private LocalDateTime parseTimestamp(
-            String line
-    ) {
+    private LocalDateTime parseTimestamp(String line) {
 
-        Matcher matcher =
-                TIMESTAMP.matcher(line);
+        Matcher matcher = TIMESTAMP.matcher(line);
 
         if (!matcher.find()) {
             return ParserUtils.defaultTimestamp();
         }
 
         String rawTimestamp =
-                matcher.group(1);
+                matcher.group(1)
+                        .replaceAll("\\s+", " ")
+                        .trim();
 
-        return LocalDateTime.of(
-                LocalDate.now().getYear(),
-                java.time.Month.valueOf(
-                        rawTimestamp.substring(
-                                0,
-                                3
-                        ).toUpperCase()
-                ),
-                Integer.parseInt(
-                        rawTimestamp.split("\\s+")[1]
-                ),
-                Integer.parseInt(
-                        rawTimestamp.split("\\s+")[2]
-                                .split(":")[0]
-                ),
-                Integer.parseInt(
-                        rawTimestamp.split("\\s+")[2]
-                                .split(":")[1]
-                ),
-                Integer.parseInt(
-                        rawTimestamp.split("\\s+")[2]
-                                .split(":")[2]
+        return LocalDateTime.parse(
+                LocalDate.now().getYear()
+                        + " "
+                        + rawTimestamp,
+                DateTimeFormatter.ofPattern(
+                        "yyyy MMM d HH:mm:ss",
+                        Locale.ENGLISH
                 )
         );
     }

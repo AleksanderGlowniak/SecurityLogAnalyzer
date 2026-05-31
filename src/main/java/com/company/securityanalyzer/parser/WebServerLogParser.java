@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 public class WebServerLogParser implements LogParser {
 
-    private static final Pattern WEB_LOG_PATTERN =
+    static final Pattern WEB_LOG_PATTERN =
             Pattern.compile(
                     "(\\S+)\\s+-\\s+-\\s+" +
                             "\\[(.*?)\\]\\s+" +
@@ -31,7 +31,8 @@ public class WebServerLogParser implements LogParser {
 
     private static final DateTimeFormatter TIMESTAMP_FORMAT =
             DateTimeFormatter.ofPattern(
-                    "dd/MMM/yyyy:HH:mm:ss Z"
+                    "dd/MMM/yyyy:HH:mm:ss Z",
+                    java.util.Locale.ENGLISH
             );
 
     @Override
@@ -40,6 +41,9 @@ public class WebServerLogParser implements LogParser {
         try (var lines = Files.lines(file)) {
 
             return lines
+                    .map(String::trim)
+                    .filter(line -> !line.isEmpty())
+                    .filter(line -> !line.equals("```"))
                     .limit(20)
                     .anyMatch(this::looksLikeWebLog);
 
@@ -70,8 +74,14 @@ public class WebServerLogParser implements LogParser {
                 long lineNumber =
                         lineCounter.incrementAndGet();
 
+                String trimmed = line.trim();
+
+                if (trimmed.isEmpty() || trimmed.equals("```")) {
+                    return;
+                }
+
                 Matcher matcher =
-                        WEB_LOG_PATTERN.matcher(line);
+                        WEB_LOG_PATTERN.matcher(trimmed);
 
                 if (!matcher.matches()) {
 
