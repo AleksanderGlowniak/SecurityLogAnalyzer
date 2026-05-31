@@ -1,12 +1,23 @@
 package com.company.securityanalyzer.service;
 
+import com.company.securityanalyzer.config.RuleConfig;
 import com.company.securityanalyzer.model.*;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ReconEscalationCorrelationRule
         implements CorrelationRule {
+
+    private final RuleConfig config;
+
+    public ReconEscalationCorrelationRule(
+            RuleConfig config
+    ) {
+        this.config = config;
+    }
 
     @Override
     public List<Incident> correlate(
@@ -35,36 +46,69 @@ public class ReconEscalationCorrelationRule
             List<Incident> ipIncidents =
                     entry.getValue();
 
-            boolean recon =
+            List<Incident> reconIncidents =
                     ipIncidents.stream()
-                            .anyMatch(
+                            .filter(
                                     i ->
                                             i.title()
                                                     .contains(
                                                             "Recon"
                                                     )
-                            );
+                            )
+                            .toList();
 
-            boolean traversal =
+            List<Incident> traversalIncidents =
                     ipIncidents.stream()
-                            .anyMatch(
+                            .filter(
                                     i ->
                                             i.title()
                                                     .contains(
                                                             "Directory Traversal"
                                                     )
+                            )
+                            .toList();
+
+            boolean correlated =
+                    reconIncidents.stream()
+                            .anyMatch(
+                                    reconIncident ->
+                                            traversalIncidents.stream()
+                                                    .anyMatch(
+                                                            traversalIncident ->
+                                                                    Math.abs(
+                                                                            Duration.between(
+                                                                                    reconIncident.firstSeen(),
+                                                                                    traversalIncident.firstSeen()
+                                                                            ).toMinutes()
+                                                                    )
+                                                                            <= config.getReconTraversalWindowMinutes()
+                                                    )
                             );
 
-            if (!(recon && traversal)) {
+            if (!correlated) {
                 continue;
             }
 
-            Incident correlated =
+            LocalDateTime firstSeen =
+                    ipIncidents.stream()
+                            .map(
+                                    Incident::firstSeen
+                            )
+                            .filter(
+                                    Objects::nonNull
+                            )
+                            .min(
+                                    LocalDateTime::compareTo
+                            )
+                            .orElse(null);
+
+            Incident correlatedIncident =
                     new Incident(
                             Severity.CRITICAL,
                             "Active Exploitation Attempt",
                             "Reconnaissance followed by attack activity",
                             ip,
+                            firstSeen,
                             ipIncidents.stream()
                                     .flatMap(
                                             i ->
@@ -74,9 +118,17 @@ public class ReconEscalationCorrelationRule
                                     .toList()
                     );
 
-            results.add(correlated);
+            results.add(
+                    correlatedIncident
+            );
 
-            consumed.addAll(ipIncidents);
+            consumed.addAll(
+                    reconIncidents
+            );
+
+            consumed.addAll(
+                    traversalIncidents
+            );
         }
 
         incidents.stream()
@@ -84,7 +136,9 @@ public class ReconEscalationCorrelationRule
                         i ->
                                 !consumed.contains(i)
                 )
-                .forEach(results::add);
+                .forEach(
+                        results::add
+                );
 
         return results;
     }

@@ -11,10 +11,13 @@ import java.util.List;
 public class DetectionService {
 
     private final List<Detector> detectors;
+    private final RuleConfig config;
 
     public DetectionService(
             RuleConfig config
     ) {
+
+        this.config = config;
 
         detectors = List.of(
                 new BruteForceDetector(config),
@@ -41,7 +44,9 @@ public class DetectionService {
         }
 
         CorrelationEngine correlation =
-                new CorrelationEngine();
+                new CorrelationEngine(
+                        config
+                );
 
         incidents =
                 correlation.correlate(

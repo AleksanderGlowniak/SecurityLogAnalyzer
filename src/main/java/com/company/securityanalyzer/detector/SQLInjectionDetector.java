@@ -3,11 +3,8 @@ package com.company.securityanalyzer.detector;
 import com.company.securityanalyzer.config.RuleConfig;
 import com.company.securityanalyzer.model.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class SQLInjectionDetector
         extends AbstractDetector {
@@ -26,11 +23,17 @@ public class SQLInjectionDetector
         Map<String, List<String>> evidenceByIp =
                 new HashMap<>();
 
+        Map<String, LocalDateTime> firstSeenByIp =
+                new HashMap<>();
+
         for (Event event : events) {
 
             String path =
                     event.attributes()
-                            .getOrDefault("path", "");
+                            .getOrDefault(
+                                    "path",
+                                    ""
+                            );
 
             String upper =
                     path.toUpperCase();
@@ -57,6 +60,15 @@ public class SQLInjectionDetector
                                 ip -> new ArrayList<>()
                         )
                         .add(path);
+
+                firstSeenByIp.merge(
+                        event.sourceIp(),
+                        event.timestamp(),
+                        (a, b) ->
+                                a.isBefore(b)
+                                        ? a
+                                        : b
+                );
             }
         }
 
@@ -71,6 +83,9 @@ public class SQLInjectionDetector
                             "SQL Injection",
                             "SQL injection payloads detected",
                             entry.getKey(),
+                            firstSeenByIp.get(
+                                    entry.getKey()
+                            ),
                             entry.getValue()
                     )
             );

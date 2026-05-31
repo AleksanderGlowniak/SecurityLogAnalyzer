@@ -3,6 +3,7 @@ package com.company.securityanalyzer.detector;
 import com.company.securityanalyzer.config.RuleConfig;
 import com.company.securityanalyzer.model.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,9 +53,7 @@ public class ApiAbuseDetector
                                     e ->
                                             "429".equals(
                                                     e.attributes()
-                                                            .get(
-                                                                    "status"
-                                                            )
+                                                            .get("status")
                                             )
                             );
 
@@ -62,12 +61,19 @@ public class ApiAbuseDetector
                     >= config.getRequestBurstThreshold()
                     && rateLimited) {
 
+                LocalDateTime firstSeen =
+                        requests.stream()
+                                .map(Event::timestamp)
+                                .min(LocalDateTime::compareTo)
+                                .orElse(null);
+
                 incidents.add(
                         new Incident(
                                 Severity.MEDIUM,
                                 "API Abuse",
                                 "Burst activity followed by rate limiting",
                                 ip,
+                                firstSeen,
                                 List.of(
                                         requests.size()
                                                 + " requests"

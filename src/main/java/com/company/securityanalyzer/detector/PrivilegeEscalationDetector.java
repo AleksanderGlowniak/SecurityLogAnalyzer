@@ -50,6 +50,7 @@ public class PrivilegeEscalationDetector
                                     "Privilege Escalation",
                                     "Sensitive command executed",
                                     event.sourceIp(),
+                                    event.timestamp(),
                                     List.of(command)
                             )
                     );

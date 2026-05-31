@@ -2,6 +2,7 @@ package com.company.securityanalyzer.service;
 
 import com.company.securityanalyzer.model.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,12 +50,26 @@ public class CredentialAttackCorrelationRule
                 continue;
             }
 
+            LocalDateTime firstSeen =
+                    ipIncidents.stream()
+                            .map(
+                                    Incident::firstSeen
+                            )
+                            .filter(
+                                    Objects::nonNull
+                            )
+                            .min(
+                                    LocalDateTime::compareTo
+                            )
+                            .orElse(null);
+
             Incident merged =
                     new Incident(
                             Severity.CRITICAL,
                             "Multi-Vector Credential Attack",
                             "Correlated login abuse across services",
                             ip,
+                            firstSeen,
                             ipIncidents.stream()
                                     .flatMap(
                                             i ->

@@ -1,5 +1,6 @@
 package com.company.securityanalyzer.model;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record Incident(
@@ -7,6 +8,7 @@ public record Incident(
         String title,
         String description,
         String sourceIp,
+        LocalDateTime firstSeen,
         List<String> evidence
 ) {
 }

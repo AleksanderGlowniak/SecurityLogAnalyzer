@@ -3,6 +3,7 @@ package com.company.securityanalyzer.detector;
 import com.company.securityanalyzer.config.RuleConfig;
 import com.company.securityanalyzer.model.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,9 @@ public class ReconDetector
         Map<String, Set<String>> pathsByIp =
                 new HashMap<>();
 
+        Map<String, LocalDateTime> firstSeenByIp =
+                new HashMap<>();
+
         for (Event e : events) {
 
             String path =
@@ -41,6 +45,12 @@ public class ReconDetector
                                 k -> new HashSet<>()
                         )
                         .add(path);
+
+                firstSeenByIp.merge(
+                        e.sourceIp(),
+                        e.timestamp(),
+                        (a, b) -> a.isBefore(b) ? a : b
+                );
             }
         }
 
@@ -58,6 +68,9 @@ public class ReconDetector
                                         "Reconnaissance Activity",
                                         "Sensitive endpoint enumeration",
                                         e.getKey(),
+                                        firstSeenByIp.get(
+                                                e.getKey()
+                                        ),
                                         e.getValue()
                                                 .stream()
                                                 .toList()

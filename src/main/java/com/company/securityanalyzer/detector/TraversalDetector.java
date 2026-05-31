@@ -43,6 +43,7 @@ public class TraversalDetector
                                     "Directory Traversal",
                                     "Traversal pattern detected",
                                     e.sourceIp(),
+                                    e.timestamp(),
                                     List.of(path)
                             )
                     );

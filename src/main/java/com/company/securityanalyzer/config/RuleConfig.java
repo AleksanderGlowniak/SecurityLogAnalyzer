@@ -12,6 +12,7 @@ public class RuleConfig {
     private List<String> traversalPatterns;
     private List<String> sensitivePaths;
     private List<String> sensitiveCommands;
+    private long reconTraversalWindowMinutes = 5;
 
     public int getFailedLoginThreshold() {
         return failedLoginThreshold;
@@ -67,5 +68,16 @@ public class RuleConfig {
 
     public void setSensitiveCommands(List<String> sensitiveCommands) {
         this.sensitiveCommands = sensitiveCommands;
+    }
+
+    public long getReconTraversalWindowMinutes() {
+        return reconTraversalWindowMinutes;
+    }
+
+    public void setReconTraversalWindowMinutes(
+            long reconTraversalWindowMinutes
+    ) {
+        this.reconTraversalWindowMinutes =
+                reconTraversalWindowMinutes;
     }
 }

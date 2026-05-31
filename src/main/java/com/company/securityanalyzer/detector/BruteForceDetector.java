@@ -3,6 +3,7 @@ package com.company.securityanalyzer.detector;
 import com.company.securityanalyzer.config.RuleConfig;
 import com.company.securityanalyzer.model.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,7 +34,8 @@ public class BruteForceDetector
 
         for (var entry : byIp.entrySet()) {
 
-            String ip = entry.getKey();
+            String ip =
+                    entry.getKey();
 
             List<Event> ipEvents =
                     entry.getValue();
@@ -42,11 +44,8 @@ public class BruteForceDetector
                     ipEvents.stream()
                             .filter(
                                     e ->
-                                            e.eventType() ==
-                                                    EventType.SSH_FAILED_LOGIN
-                                                    ||
-                                                    e.eventType() ==
-                                                            EventType.WEB_LOGIN_FAILURE
+                                            e.eventType() == EventType.SSH_FAILED_LOGIN
+                                                    || e.eventType() == EventType.WEB_LOGIN_FAILURE
                             )
                             .count();
 
@@ -54,16 +53,19 @@ public class BruteForceDetector
                     ipEvents.stream()
                             .anyMatch(
                                     e ->
-                                            e.eventType() ==
-                                                    EventType.SSH_SUCCESS_LOGIN
-                                                    ||
-                                                    e.eventType() ==
-                                                            EventType.WEB_LOGIN_SUCCESS
+                                            e.eventType() == EventType.SSH_SUCCESS_LOGIN
+                                                    || e.eventType() == EventType.WEB_LOGIN_SUCCESS
                             );
 
             if (failures >=
                     config.getFailedLoginThreshold()
                     && success) {
+
+                LocalDateTime firstSeen =
+                        ipEvents.stream()
+                                .map(Event::timestamp)
+                                .min(LocalDateTime::compareTo)
+                                .orElse(null);
 
                 incidents.add(
                         new Incident(
@@ -71,9 +73,9 @@ public class BruteForceDetector
                                 "Credential Attack",
                                 "Repeated failures followed by success",
                                 ip,
+                                firstSeen,
                                 List.of(
-                                        failures
-                                                + " failures",
+                                        failures + " failures",
                                         "Successful login observed"
                                 )
                         )
