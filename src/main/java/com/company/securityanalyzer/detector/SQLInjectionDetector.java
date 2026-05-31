@@ -6,6 +6,9 @@ import com.company.securityanalyzer.model.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SQLInjectionDetector
         extends AbstractDetector {
 
@@ -20,20 +23,19 @@ public class SQLInjectionDetector
             List<Event> events
     ) {
 
-        List<Incident> incidents =
-                new ArrayList<>();
+        Map<String, List<String>> evidenceByIp =
+                new HashMap<>();
 
         for (Event event : events) {
 
             String path =
                     event.attributes()
-                            .getOrDefault(
-                                    "path",
-                                    ""
-                            );
+                            .getOrDefault("path", "");
 
             String upper =
                     path.toUpperCase();
+
+            boolean matched = false;
 
             for (String pattern :
                     config.getSqlInjectionPatterns()) {
@@ -42,19 +44,36 @@ public class SQLInjectionDetector
                         pattern.toUpperCase()
                 )) {
 
-                    incidents.add(
-                            new Incident(
-                                    Severity.HIGH,
-                                    "SQL Injection Attempt",
-                                    "Detected SQLi payload",
-                                    event.sourceIp(),
-                                    List.of(path)
-                            )
-                    );
-
+                    matched = true;
                     break;
                 }
             }
+
+            if (matched) {
+
+                evidenceByIp
+                        .computeIfAbsent(
+                                event.sourceIp(),
+                                ip -> new ArrayList<>()
+                        )
+                        .add(path);
+            }
+        }
+
+        List<Incident> incidents =
+                new ArrayList<>();
+
+        for (var entry : evidenceByIp.entrySet()) {
+
+            incidents.add(
+                    new Incident(
+                            Severity.HIGH,
+                            "SQL Injection",
+                            "SQL injection payloads detected",
+                            entry.getKey(),
+                            entry.getValue()
+                    )
+            );
         }
 
         return incidents;

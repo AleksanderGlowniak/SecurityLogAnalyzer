@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
@@ -23,16 +24,16 @@ public class WebServerLogParser implements LogParser {
 
     static final Pattern WEB_LOG_PATTERN =
             Pattern.compile(
-                    "(\\S+)\\s+-\\s+-\\s+" +
-                            "\\[(.*?)\\]\\s+" +
-                            "\"(\\S+)\\s+(.*?)\\s+(.*?)\"\\s+" +
-                            "(\\d+)\\s+(\\d+)"
+                    "^(\\S+)\\s+-\\s+-\\s+" +
+                            "\\[(.+?)\\]\\s+" +
+                            "\"(.*?)\"\\s+" +
+                            "(\\d{3})\\s+(\\d+)$"
             );
 
     private static final DateTimeFormatter TIMESTAMP_FORMAT =
             DateTimeFormatter.ofPattern(
                     "dd/MMM/yyyy:HH:mm:ss Z",
-                    java.util.Locale.ENGLISH
+                    Locale.ENGLISH
             );
 
     @Override
@@ -76,7 +77,8 @@ public class WebServerLogParser implements LogParser {
 
                 String trimmed = line.trim();
 
-                if (trimmed.isEmpty() || trimmed.equals("```")) {
+                if (trimmed.isEmpty()
+                        || trimmed.equals("```")) {
                     return;
                 }
 
@@ -99,7 +101,8 @@ public class WebServerLogParser implements LogParser {
 
                 try {
 
-                    String ip = matcher.group(1);
+                    String ip =
+                            matcher.group(1);
 
                     LocalDateTime timestamp =
                             OffsetDateTime.parse(
@@ -108,23 +111,80 @@ public class WebServerLogParser implements LogParser {
                                     )
                                     .toLocalDateTime();
 
-                    String method = matcher.group(3);
-                    String path = matcher.group(4);
-                    String protocol = matcher.group(5);
-                    String status = matcher.group(6);
-                    String bytes = matcher.group(7);
+                    String request =
+                            matcher.group(3);
+
+                    String status =
+                            matcher.group(4);
+
+                    String bytes =
+                            matcher.group(5);
+
+                    int firstSpace =
+                            request.indexOf(' ');
+
+                    int lastSpace =
+                            request.lastIndexOf(' ');
+
+                    if (firstSpace < 0
+                            || lastSpace <= firstSpace) {
+
+                        throw new IllegalArgumentException(
+                                "Invalid HTTP request format: "
+                                        + request
+                        );
+                    }
+
+                    String method =
+                            request.substring(
+                                    0,
+                                    firstSpace
+                            );
+
+                    String path =
+                            request.substring(
+                                    firstSpace + 1,
+                                    lastSpace
+                            );
+
+                    String protocol =
+                            request.substring(
+                                    lastSpace + 1
+                            );
 
                     Map<String, String> attributes =
                             new HashMap<>();
 
-                    attributes.put("method", method);
-                    attributes.put("path", path);
-                    attributes.put("protocol", protocol);
-                    attributes.put("status", status);
-                    attributes.put("bytes", bytes);
+                    attributes.put(
+                            "method",
+                            method
+                    );
+
+                    attributes.put(
+                            "path",
+                            path
+                    );
+
+                    attributes.put(
+                            "protocol",
+                            protocol
+                    );
+
+                    attributes.put(
+                            "status",
+                            status
+                    );
+
+                    attributes.put(
+                            "bytes",
+                            bytes
+                    );
 
                     EventType type =
-                            classify(path, status);
+                            classify(
+                                    path,
+                                    status
+                            );
 
                     events.add(
                             new Event(
@@ -158,7 +218,10 @@ public class WebServerLogParser implements LogParser {
             );
         }
 
-        return new ParseResult(events, errors);
+        return new ParseResult(
+                events,
+                errors
+        );
     }
 
     private EventType classify(
