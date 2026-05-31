@@ -26,8 +26,6 @@ class AuthLogParserTest {
                 "errors=" + result.errors().size()
         );
 
-        result.events().forEach(System.out::println);
-
         assertEquals(
                 11,
                 result.events().size()

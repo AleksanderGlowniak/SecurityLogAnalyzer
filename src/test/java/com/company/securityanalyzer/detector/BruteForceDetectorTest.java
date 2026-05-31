@@ -77,4 +77,54 @@ class BruteForceDetectorTest {
                 incidents.isEmpty()
         );
     }
+
+    @Test
+    void shouldDetectWhenFailuresEqualThreshold() {
+        RuleConfig config = TestConfiguration.config();
+
+        List<Event> events = List.of(
+                TestUtils.event("1.1.1.1", EventType.SSH_FAILED_LOGIN),
+                TestUtils.event("1.1.1.1", EventType.SSH_FAILED_LOGIN),
+                TestUtils.event("1.1.1.1", EventType.SSH_FAILED_LOGIN),
+                TestUtils.event("1.1.1.1", EventType.SSH_SUCCESS_LOGIN)
+        );
+
+        var incidents = new BruteForceDetector(config).detect(events);
+
+        assertEquals(1, incidents.size());
+    }
+
+    @Test
+    void shouldNotDetectBelowThreshold() {
+        RuleConfig config = TestConfiguration.config();
+
+        List<Event> events = List.of(
+                TestUtils.event("1.1.1.1", EventType.SSH_FAILED_LOGIN),
+                TestUtils.event("1.1.1.1", EventType.SSH_FAILED_LOGIN),
+                TestUtils.event("1.1.1.1", EventType.SSH_SUCCESS_LOGIN)
+        );
+
+        assertTrue(
+                new BruteForceDetector(config)
+                        .detect(events)
+                        .isEmpty()
+        );
+    }
+
+    @Test
+    void shouldNotDetectWithoutSuccessfulLogin() {
+        RuleConfig config = TestConfiguration.config();
+
+        List<Event> events = List.of(
+                TestUtils.event("1.1.1.1", EventType.SSH_FAILED_LOGIN),
+                TestUtils.event("1.1.1.1", EventType.SSH_FAILED_LOGIN),
+                TestUtils.event("1.1.1.1", EventType.SSH_FAILED_LOGIN)
+        );
+
+        assertTrue(
+                new BruteForceDetector(config)
+                        .detect(events)
+                        .isEmpty()
+        );
+    }
 }
